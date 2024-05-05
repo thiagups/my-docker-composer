@@ -1,0 +1,75 @@
+version : '3'
+services:
+  php73:
+    container_name: 'php.73'
+    build:
+      context: .
+      dockerfile: php/7.3/Dockerfile
+    ports:
+    - "7300:80"
+    volumes:
+    - ~/dev/www/vemcorrer:/var/www/html:delegated
+    extra_hosts: 
+      - "host.docker.internal:host-gateway"
+
+  php81:
+      container_name: "php.81"
+      build:  
+        context: .
+        dockerfile: php/8.1/Dockerfile
+      ports:
+        - "8100:80"
+      volumes:
+        - ~/dev/www:/var/www/html:delegated
+      extra_hosts: 
+        - "host.docker.internal:host-gateway"
+
+  php56:
+    container_name: 'php.56'
+    build:  
+      context: .
+      dockerfile: php/5.6/Dockerfile
+    ports:
+    - "5600:80"
+    volumes:
+    - ~/dev/www:/var/www/html:delegated
+    extra_hosts: 
+      - "host.docker.internal:host-gateway"
+
+  # node_gallium:
+  #    container_name: 'node.gallium'
+  #    build:
+  #      context: .
+  #      dockerfile: node/gallium/Dockerfile
+  #    ports:
+  #      - "3100:80"
+  #    volumes:
+  #      - /var/www/html:/var/www/html:delegated
+
+  mysql:
+    container_name: 'database.mysql'
+    image: mysql:5.7
+    command: mysqld --sql_mode="STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION"
+    ports: 
+    - 3306:3306
+    volumes:    
+    - ~/docker/.database:/var/lib/mysql
+    - ~/sql/dump.sql:/docker-entrypoint-initdb.d/dump.sql
+    environment:
+    - MYSQL_ROOT_PASSWORD=root
+
+  ngrok:
+    image: ngrok/ngrok
+    container_name: ngrok
+
+    volumes:
+     - ~/.config/ngrok/ngrok.yml:/etc/ngrok.yml
+
+    ports:
+      - "4040:4040"
+
+    command:
+      - "http"
+      - "php73:80"
+      - "--config"
+      - "/etc/ngrok.yml"
